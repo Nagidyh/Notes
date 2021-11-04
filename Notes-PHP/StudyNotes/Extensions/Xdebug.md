@@ -12,8 +12,6 @@
 
 ## 安装
 
-### Linux 
-
 //TODO
 
 ### Windows 
@@ -30,13 +28,11 @@
   ```ini
    [Xdebug]
   zend_extension=(dll 文件路径)   (Win)
-  zend_extension=(dll 文件路径) （Linux）
-  
   xdebug.profiler_enable=on
   xdebug.trace_output_dir="../Projects/xdebug"
   xdebug.profiler_output_dir="../Projects/xdebug"
   ```
-
+  
 - 重启 Server ， 查看 `phpinfo()` 是否输出 `Xdebug` 插件的相关信息即可知晓是否安装成功。
 
 ## Xdebug 调试原理
@@ -90,4 +86,23 @@ xdebug.profiler_output_dir = "d:\tmp"
 4. 在 PHP -> debug 中点击 Validate 测试配置是否成功。
 5. 剩下配置好 Server，创建调试配置。
 6. debug 运行 Server 就可以进行调试了。
+
+## 在 PHP 8.0 与 Xdebug 3 的情况下配置
+
+在配置 symfony debug 的时候访问，IDE 一直在 waiting for incoming connection 。
+
+用老配置方式折磨了半天，最后发现原来是因为 Xdebug 3 的 php.ini 写法出现了一些变化。
+
+### 新的配置方式
+
+```ini
+[XDebug]
+zend_extension=dll
+xdebug.mode=debug
+xdebug.start_with_request=default
+xdebug.client_host=localhost
+xdebug.client_port=9000
+xdebug.remote_handler=dbgp
+xdebug.idekey=PHPSTORM
+```
 
