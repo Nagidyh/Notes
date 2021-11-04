@@ -41,7 +41,7 @@
 
 ## Xdebug 调试原理
 
-Xdebug的工作原理可以总结为下面几个步骤
+Xdebug 的工作原理可以总结为下面几个步骤
 
 1. IDE（比如PHPStorm，下文所述的客户端）中已经集成了一个遵循 **BGDp** 协议（一个专门用来调试的协议）的Xdebug 插件。当要 debug 的时候，点击一些 IDE 的某个按钮，启动这个插件。该插件会启动一个 9000 的端口监听远程服务器发过来的debug信息。
 
@@ -64,8 +64,9 @@ Xdebug的工作原理可以总结为下面几个步骤
 #### 1. 修改 php.ini 配置 Xdebug 
 
 ```ini
+[XDebug]
 ;xdebug 库
-zend_extension = "dll"
+zend_extension = "php_xdebug.dll"
 ;开启远程调试
 xdebug.remote_enable = On
 ;客户机 ip
