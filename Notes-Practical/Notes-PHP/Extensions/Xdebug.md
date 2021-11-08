@@ -106,3 +106,25 @@ xdebug.remote_handler=dbgp
 xdebug.idekey=PHPSTORM
 ```
 
+## 调试
+
+### 调试方式
+
+#### step into 步进
+
+单步执行，遇到子函数就进入并且继续**单步执行**（简而言之，进入子函数）；
+
+#### step over 步跃
+
+在单步执行时，在函数内遇到子函数时不会进入子函数内单步执行，而是将子函数整个执行完再停止，也就是把子函数整个作为一步。有一点,经过我们简单的调试,在不存在子函数的情况下是和 step into 效果一样的（简而言之，**越过子函数，但子函数会执行**）。
+
+#### step out 步退
+
+单步执行到子函数内时，用 step out 就可以执行完子函数余下部分，并返**回到上一层函数**。
+
+## Xdebug Profiler
+
+
+
+> 参考：[Xdebug profiler 中文文档](http://xdebug.org.cn/docs/profiler)
+

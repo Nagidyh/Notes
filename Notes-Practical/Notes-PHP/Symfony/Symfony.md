@@ -84,11 +84,96 @@ composer create-project symfony/website-skeleton project_name
 composer create-project symfony/skeleton project_name
 ```
 
+##### 部署完无法访问的问题
 
+今天在公司部署 symfony 站点的时候遇到一个问题，使用 php7.3 可以正确通过 fastCGI 解释 php 脚本，但是我将请求转发给 php8.0 的时候就一只不成功，也没有日志文件报错，排查了很久是否是 PHP-FPM 或是 Nginx 配置的问题，但是都检查过了也没法发现问题。
+
+突然想到有没有可能是版本问题，php8.0 可能使用到了新的 VC++ 类库来编写 PHP 的解释器，遂安装了最新的 VC 库后果然一切正常了。
+
+去网上大概查了一下资料，php8.0 对 Runtime 这个概念真的是越发着迷了 :laughing:
 
 > 参考：[symfony 官方文档](https://symfony.com/doc)
 
 ### 第一个页面
+
+Symfony 的架构设计也是 MVC ，请求由入口文件进入，然后由 Symfony 根据路由规则解析到对应的 Controller->Action 来处理请求信息，Symfony 到底如何解析，做了怎么样的设计，后续阅读源码的时候再做详细记录。
+
+#### 路由
+
+##### YAML 配置路由
+
+通过 `composer create-project symfony/skeleton` 构建的 Symfony 项目，默认是没有 `Annotations` 组件的，所以需要通过 `YAML` 来配置路由。具体方式如下：
+
+```yaml
+# config/routes.yaml
+# the "app_admin" route name is not important yet
+app_addmin:
+ path: /admin/index
+ controller: App\Controller\AdminController::index
+```
+
+##### 注解路由
+
+在 PHP8 以上的版本构建 Symfony 的话，可以使用 PHP8 提供的原生 PHP 注解（Attribute）。在之前的版本，可以使用注释版注解（Annotation）来使用注解路由。
+
+首先需要安装 `Annotation Route` ， 这个组件是由 `symfony/flex` 维护的包，所以可以使用别名添加：
+
+```sh
+composer req annotations
+```
+
+> [关于 symfony/flex](#Symfony/Flex)
+
+```php
+// src/Controller/AdminController.php
+
+// ...
++ use Symfony\Component\Routing\Annotation\Route;
+
+class AdminController
+{
+    // PHP 8 earlier 
++   /**
++    * @Route("/admin/index")
++    */
+    // PHP 8. 
++   #[Route('/admin/index')]
+    public function index()
+    {
+        // this looks exactly the same
+    }
+}
+```
+
+
+
+#### 控制器
+
+##### YAML 路由写法
+
+```php
+<?php
+// src/Controller/AdminController.php
+namespace App\Controller;
+
+use Symfony\Component\HttpFoundation\Response;
+
+class AdminController
+{
+    /**
+    * @return Response
+    */
+    public function index(): Response
+    {
+        $number = random_int(0, 100);
+        return new Response(
+            '<html><body>Lucky number: '.$number.'</body></html>'
+        );
+    }
+}
+```
+
+
 
 
 
