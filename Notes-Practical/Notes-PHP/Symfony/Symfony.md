@@ -68,6 +68,16 @@ rm Homebrew.sh ; wget https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh
 
 国内服务器安装的一键式脚本。
 
+##### 服务端安装的一个小坑
+
+php 默认禁用了 
+
+- `putenv()`
+- `proc_open()`
+- `proc_get_status()`
+
+ 函数，要使用 composer 需要先解除禁止函数。
+
 #### Windows
 
 两个方式，一个是在 [Symfony](https://symfony.com/) 官网找到安装程序，全局安装 symfony 就可以在命令行使用 symfony 命令配置了。这种方式大概率会因为网络问题导致根本安装不上 symfony ，所以还是建议选择第二种。
