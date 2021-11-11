@@ -91,12 +91,84 @@ OneToMany
 
 在安装了 `orm` 到项目中后，可以使用由 `Doctrine\ORM` 提供的 `EntityManager` 来管理 Entity 们，包括对他们进行持久化的操作。
 
+##### Migrations
+
+Migration 意味迁移、指在将 Entity 迁移（migrate）数据库中。
+
+可以通过命令：
+
+```powershell
+php bin/console make:migration
+```
+
+创建数据库迁移文件，可以再通过指令
+
+```powershell
+php bin/console make:migration:migrate
+```
+
+执行数据迁移文件，完成数据迁移
+
+##### EntityManager
+
 那么如何获得 `EntityManager` 对象呢？
 
 这里首先要引入集成测试的概念，在之前的测试方法中，我们一直使用的 `TestCase` 进行单元测试（UnitTest），单元测试的原则就是，仅对单一功能进行测试，比如某一 Entity 对象、某一工具类等，但是对于复杂的功能，**使得单一的对象需要其他依赖来完成整体测试时就需要使用集成测试来完成了**。
 
+使用集成测试的方式
 
+```powershell
+# 使用 make 指令来创建继承测试类
+php bin/console make:test
+KernelTestCase
+IntegrationTest\EntityManagerTest
+```
 
+使用该方法开启的测试用例，将继承 `KernelTestCase`，这个类为我们提供了 `kernel` 对象。
 
+Symfony 通过在启动 Kernel 的过程中，维护了一个名为 Container 的概念，在 Container 中集成了整个 Symfony 声明的 Service ，EntityManager 就是其中一个 Service ，我们可以通过 EntityManager 来管理、持久化我们的 Entity 对象。
+
+```php
+# 首先需要启动 Kernel 来创建 Container （仅在测试用例中，在 index.php 中自动启动了 Kernel ）
+class EntityManagerTest extends KernelTestCase
+{
+	public function testEntityManager(): void
+    {
+        $kernel = self::bootKernel();
+        $kernel->getContainer->get('service_alias or service.class')
+    }
+}
+# 然后通过 Kernal 来获取 Container 中的服务，可以通过类、或者是别名
+```
+
+可以通过指令
+
+```powershell
+php bin/console debug:container entitymanger 
+```
+
+来查找容器中 EntityManager 的别名或类名
+
+EntityManager 对象可以通过 persist flush 等方法来对 Entity 进行操作。
+
+> 具体参考官方文档：EntityManager
 
 ### 文章工厂类
+
+我们构建一个简单 PHP 对象时，通常使用工厂模式来统一管理他们，例如在我们的博客系统中，可以将每一篇文章的生成交由给 `PostFactory` 服务来统一管理，首先需要在 src 目录中建立 Factory 目录用来存放工厂类。
+
+```php
+class PostFactory 
+{
+	public function create(string $title, string $body, string $summary = null): Post
+    {
+		$post = new Post();
+        $post->setTitle($title);
+        $post->setBody($title);
+    }
+}
+```
+
+### 数据内容填充
+
+使用 `orm-fixtures` 组件来填充数据内容
