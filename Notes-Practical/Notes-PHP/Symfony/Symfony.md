@@ -63,7 +63,9 @@ brew update
 ##### 使用国内镜像安装方法
 
 ```sh
-rm Homebrew.sh ; wget https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh ; bash Homebrew.sh
+rm Homebrew.sh ; 
+wget https://gitee.com/cunkai/HomebrewCN/raw/master/Homebrew.sh; 
+bash Homebrew.sh
 ```
 
 国内服务器安装的一键式脚本。
