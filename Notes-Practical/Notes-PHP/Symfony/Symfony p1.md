@@ -107,7 +107,9 @@ php bin/console make:migration
 php bin/console make:migration:migrate
 ```
 
-执行数据迁移文件，完成数据迁移
+执行数据迁移文件，完成数据迁移。
+
+在执行完数据迁移之后，就可以使用 EntityManager 来管理 Entity 。
 
 ##### EntityManager
 
@@ -172,3 +174,5 @@ class PostFactory
 ### 数据内容填充
 
 使用 `orm-fixtures` 组件来填充数据内容
+
+## EasyAdmin Bundle
