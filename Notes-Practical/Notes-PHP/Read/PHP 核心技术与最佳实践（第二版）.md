@@ -469,6 +469,12 @@ doprint($b);
 
 比如在 Java 中，由 JDBC 提供了接口具体规范，而类似 Mysql 之类的数据库去实现相应的规范，开发者只用安装 Mysql 的 SDK 本身，并不需要关心具体实习只用面向接口便可以使用，这就是面向规范编程的典型。
 
+通常在大型项目里，会把代码进行分层和分工。核心开发人员和技术经理编写核心流程和代码，往往是以接口的形式给出，而基础开发人员则针对这些接口，填充代码，如数据库操作等。这样，核心技术人员把更多的精力投入到了技术攻关和业务逻辑中。
+
+前端针对接口编程，只管在 Action 层调用 Service，不需要关心具体实现。
+
+后端负责 Dao 和 Service 的接口实现，就实现了代码分工合作。
+
 #### PHP 中的接口
 
 先来看一段 PHP 中的代码：
@@ -522,9 +528,201 @@ $obj->demo(new Car());		// 运行失败
 
 但是从上面的例子可以看出，PHP 的接口作为规范和契约的作用打了折扣。
 
-通常在大型项目里，会把代码进行分层和分工。核心开发人员和技术经理编写核心流程和代码，往往是以接口的形式给出，而基础开发人员则针对这些接口，填充代码，如数据库操作等。这样，核心技术人员把更多的精力投入到了技术攻关和业务逻辑中。
+在 PHP 中接口的语义是有限的，在 PHP 中接口可以淡化为设计文档，为团队起到一个基本的契约作用。
 
-前端针对接口编程，只管在 Action 层调用 Service，不需要关心具体实现。
+由于 PHP 是弱类型语言，且强调灵活，所以并不推荐大规模的使用接口，而是仅在部分 “内核” 使用接口，因为 PHP 的接口已经失去了很多接口应该拥有的语义。
 
-后端负责 Dao 和 Service 的接口实现，就实现了代码分工合作。
+所以从语义上考虑，可以更多的使用抽象类而不是接口。
+
+另外，PHP 5 对 OOP 特性也做了一些增强，其中就有一个 SPL （PHP 标准库）的尝试。SPL 中实现了一些接口，其中最主要的是 `Iterator` 迭代器接口，通过实现这个接口，就能使对象能够用于 foreach 结构，从而在形式上比较统一。
+
+比如 SPL 中就有一个`DirectoryIterator`类，这个类在继承 `SplFileInfo` 类的同时，实现了 `Iterator`、`Traversable`、`SeekableIterator` 这三个接口，那么这个类的实例在获得了父类 `SplFileInfo` 的全部功能外，还能够实现 `Iterator` 接口所展示的操作。
+
+```php
+# Iterator 接口原型
+current()
+    # This method returns the current index's value. You are solely responsible for tracking what the current index is as the interface does not do this for you.
+key()
+    # This method return the value of the current index's key. For foreach loops this is extermely important so that the key value can be populated.
+next()
+    # This method moves the internal index forward one entry.
+rewind()
+    # This method should reset the internal index to the first element.
+valid()
+    # This method should return true or false if there is a current element. It is called after rewind() or next().
+```
+
+如果一个类实现了 `Iterator` 接口，就必须实现这五个方法，如果实现了这五个方法，那么就可以很容易对这个类的实例进行迭代。
+
+这里的 `DirectoryIterator` 类之所以使用 foreach 进行迭代，是因为 SPL 已经为其实现了 `Iterator` 接口。
+
+使用接口设计时应该注意以下几点：
+
+- 接口作为一种规范和契约存在。作为规范，接口应该保证可用性；作为契约，接口应该保证可控性。
+- 接口只是一个声明，一旦使用了 interface 关键字，就应该实现它。
+- PHP 中接口有两个不足，一是没有契约限制（可以不实现定义的方法），二是缺少足够多的内部接口。
+
+常见的很多设计模式中，大部分都是围绕接口展开的。
+
+### 反射 API
+
+这里不展开写了，PHP 的反射和 Java 的反射在使用上非常类似。
+
+总而言之，反射是在 OOP 编程中由语言本身提供的一组可以对对象进行内省的 API，可以通过这一组 API 来实现根据对象找到他的类本身。
+
+这里简单记录一下常用的几个方法
+
+```php
+# 反射 API
+$reflect = new \ReflectionObject($object);
+$props = $reflect->getProperties();
+foreach ($props as $prop) {
+    print $prop->getName().'\n';
+}
+$methods = $reflect->getMethods();
+foreach ($methods as $method) {
+    print $method->getName().'\n';
+}
+
+# get_class 方法获取类指针
+// 返回对象关联数组
+var_dump(get_object_vars($student));
+// 类属性
+var_dump(get_class_vars(get_class($student)));
+// 返回由类的方法名组成的数组
+var_dump(get_class_methods(get_class($student)));
+// 获取所属类
+get_class($student);
+```
+
+常用于通过动态代理实现 Hook ，来优化代码等场景。
+
+不过也与 Java 类似，反射的内存开销非常大，也会破坏 OOP 本身的封装性。
+
+### 异常和错误处理
+
+首先是区分错误（Error）和异常（Exception）错误指的是在编译过程中，无法通过语义检查的、无法运行的。而异常指的是在运行过程中，不符合预期的情况，属于业务和逻辑的中断。
+
+与 Java 作一个简单的比较：
+
+```php
+# 除 0 
+<?php 
+$a =  null;
+try {
+    $a = 5/0;
+} catch(exception $e) {
+    $e->getMessage();
+    $a = -1;
+}
+echo $a;
+# reslut 
+Warning: Division by zero in ....
+...
+```
+
+Java 中捕获异常
+
+```java
+public class ExceptionTry 
+{
+    public static void tp() throws ArithmeticException 
+    {
+        int a;
+        a = 5/0;
+        System.out.println('result':+a);
+    }
+    
+    public static void main(String[] args)
+    {
+        int a;
+        try {
+            a = 5/0;
+            System.out.println('result:'+a);
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+        } finally {
+            a = -1;
+            System.out.println('reslut:'+a);
+        }
+        try {
+            ExceptionTry.tp();
+        } catch (Exception e) {
+            System.out.println('catched Exception');
+        }
+    }
+}
+
+// result
+java.lang.ArithmeticException: / by zero
+    at ....
+result: -1
+catched Exception
+```
+
+从上面的结果其实不难看出，对于除零这种场景，PHP 认为这是一个错误，直接触发了编译器的 warning，而不会进入异常处理流程，故最终 $a 的值并不是 -1。也就是说，这个错误并没有正常的进入异常处理流程，只有当你主动 throw 后，PHP 才能够捕获异常（也有一些异常 PHP 能够自动捕获）。
+
+而对于 Java，除零属于 ArithmeticExcepiton，会对其进行捕获，并进入异常处理流程。
+
+也就是说，PHP 通常是无法自动捕获有意义的异常的，它把所有不正常的情况都视作了错误，你想要捕获这个异常，就得使用 if...else 结构，保证代码是正常的，然后判断被除数是否为零，则手动 throw 出异常，再捕获。PHP 能够自动捕获的异常主要有两大类，pdoexception 和 reflectionexception。	
+
+PHP 应该在什么情况下使用异常：
+
+#### 悲观预测
+
+假设一个场景，程序员悲观的认为自己的这段代码在高并发条件下可能产生死锁，那么他就会悲观的抛出异常，在发生死锁时进行捕获，对异常进行细致的处理。
+
+#### 程序的需要、对业务的关注
+
+假设一个场景，有一个上传文件的业务需求，要把上传的文件保存在一个目录里，并在数据库中插入一个这个文件的记录，那么这两个步骤就是互相关联、密不可分的一个集成业务，缺一不可。文件保存失败，而插入成功会导致无法下载文件；而保存成功但没有记录会导致文件变成死文件，永远得不到下载。
+
+那么假设文件保存没有提示，但是保存失败会抛出异常，访问数据库也一样，插入成没有提示，失败则自动抛出异常，就可以把这两个有可能抛出异常的代码段包在一个 try 语句里，然后用 catch 捕获错误，在 catch 代码段删除没有被记录到的文件或是没有文件的记录，以保证业务的数据一致性。
+
+如果只是象征性的 try...catch，然后打印一个报错，最后 over。这样的异常不如不用。
+
+异常的两种处理方式：
+
+发生后立刻捕获：
+
+```php
+try {
+	if ( exception happen ) thrwo new Excepiton('exception msg');
+} catch (Exception $e) {
+    execute Exception
+}
+```
+
+如果业务很重要，那么异常越早处理越好，以保证程序在意外情况下能保持业务处理的一致性。比如一个操作有多个前提步骤，突然最后一个步骤异常了，那么其他前提操作都要消除掉才行，以保证数据的一致性。并且在这种核心业务下，有大量代码来做善后工作，进行数据补救，这是一种比较悲观的而又很重要的异常。我们应该把异常消灭在局部，避免异常的扩散。
+
+分散拋出异常、集中捕获：
+
+```php
+function func {
+	if ( exception happen ) thrwo new Excepiton('exception msg');
+}
+// 集中处理
+try { 
+	func()
+} catch (Exception $e) {
+    excute Exception
+}
+```
+
+如果异常不那么重要，并且在单一入口、MVC风格的应用中，为了保持代码的流程和统一，则常常采用这种异常处理方式。这种方式更强调业务流程走向，对善后工作并不关心。这是一种次要异常，其将异常集中处理从而是流程更专一。
+
+异常处理可以看做是一种事务，还可以看成是一种内建的恢复系统。如果程序某部分失败，异常将恢复到某个已知的稳定点，而这个点就是程序的上下文环境，而 try 块里面的代码就保存 catch 所要知道的程序上下文信息。
+
+#### 语言级别的健壮性要求
+
+在语言健壮性这一点，PHP 是不足的。以 Java 为例，Java 是一种面向企业级开发的语言，强调健壮性。Java 支持多线程，Java 认为，多线程被中断这种情况是彻彻底底的无法预料和避免的。所以 Java 规定，凡是用了多线程，就必须正视这种情况。要么抛出，要么处理。总之，必须面对 `InterruptedException`，不准回避。当然你可以什么都不做，但你必须意识到。
+
+
+
+异常，就是无法控制的运行时错误，会导致出错时中断正常的逻辑运行，该异常代码后面的逻辑都不能继续运行。那么 try...catch 处理的好处就是：**可以把异常造成的逻辑中断破坏降到最小范围内，并且经过补救处理后不影响业务逻辑的完整性；乱拋异常和只拋不捕获，或捕获而不补救，会导致数据混乱。**这就是异常处理的重要作用，通过精确控制运行时的流程，在程序中断时，有预见的进行补救，是逻辑流程能够回归正轨。
+
+#### PHP 的异常处理
+
+
+
+#### PHP 7 的异常处理
 
