@@ -1,3 +1,5 @@
+# Git 简单实践
+
 [TOC]
 
 ## 常用操作
@@ -183,22 +185,135 @@ git 提供了一个方法 `git cherry-pick <commit_id>` 来复制刚刚在 maste
 
 ![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/git-cheat-sheet.png)
 
-## Git 原理分析
+## 实践案例
 
-### 三大分区
+### 协作架构
 
-在本地使用 `git init` 命令初始化 git 仓库之后，就有了如下三个概念
+构建公共仓库，分为 master 分支与 dev 分支，所有开发者的开发和合并都应该在 dev 分支进行，直到迭代完成再在 master 分支进行发布。master 是受保护的，也就是不能够直接对 master 分支进行推送。当迭代完成、并进行过完整的测试后，才由项目经理将 dev 分支合并到 master 进行版本的发布。
 
-- 工作区 Working Directory
 
-  工作区就是 git 初始化后的根目录，也就是 .git 文件所在的目录，是用户可以直接修改的目录。
 
-  所以在工作区中未被 add 到 stage 的文件，都不受 git 管理。
+开发人员在本地拉取 dev 分支并构建自己的 feature 分支或 issue 分支进行开发工作，开发完成后再将开发工作的与 dev 分支合并，此时可以使用 coding 等仓库构建工具将此次合并提交给同事进行 Code Review，以确保代码的规范性。
 
-- 暂存区 Stage
+### 回滚与找回的艺术
 
-  顾名思义，是数据暂存的区域。可以理解为数据在进入本地仓库之前，暂时存放的区域。
+#### 常见回滚场景
 
-- 版本库 Commit History
+##### 仅在工作区修改
 
-  在使用了 commit 指令之后，就会将暂存区的代码放入版本库中，可以理解为一个本地的 Repository。
+文件在工作区被修改，还未提交到暂存区和本地版本库时，可以很轻松的使用 `git checkout -- <file>` 来回滚这部分修改。
+
+需要注意的是：**因为这部分内容没有被 Git 托管过，所以 Git 无法追踪其历史，一旦回退直接就被丢弃了。**
+
+用 `git status` 查看，还没有提交到暂存区的修改出现在 “Changes not staged for commit:” 部分。
+
+##### 已 add 但未 commit
+
+使用 `git add` 添加到暂存区的修改，还没有 commit 时，可以使用 `git reset HEAD <file>` 来回滚。
+
+回滚后，**工作区会保留文件的改动**，可以重新编辑再提交，或使用 `git checkout -- <file>` 彻底丢弃修改。
+
+##### 已 commit 但未 push
+
+已经提交到了本地版本库，但未推送到远程库的修改，可以通过：
+
+`git reset <commit_id>` 或 `git reset --hard <commit_id>` 来回滚。
+
+需要注意的是，使用 `git reset` 指令回滚 commit，**那么在 `<commit_id>` 之后的 commit 都将会被废弃。**
+
+`git reset` 默认会将被丢弃的记录所改动的文件保留在工作区中，以便重新编辑和再提交。加上 `--hard` 选项则不保留这部分内容，需谨慎使用。
+
+##### 修改本地最近一次 commit 
+
+有时 commit 之后发现刚才没改全，想再次修改后仍记录在一个 commit 里。利用 “git reset” 可达到这个目的，不过，Git 还提供了更简便的方法来修改最近一次 commit。
+
+命令格式如下：
+
+`git commit --amend [ -m <commit说明> ]`
+
+如果命令中不加`-m <commit说明>`部分，则 Git 拉起编辑器来输入日志说明。
+
+**请注意，”git commit –amend” 只可用于修改本地未 push 的 commit，不要改动已 push 的 commit！**
+
+##### 已 push 到远端时
+
+**注意！此时不能用 “git reset”，需要用 “git revert”！**
+**注意！此时不能用 “git reset”，需要用 “git revert”！**
+**注意！此时不能用 “git reset”，需要用 “git revert”！**
+
+之所以不能在远程仓库中使用 `git reset` 是因为使用 reset 会抹掉历史，用在远程仓库中会带来各种各样的问题。而使用 `git revert` 用于回滚某次提交时，会生成的新的提交而不会抹掉历史。
+
+##### git reset 和 git revert 的区别 ***
+
+分支初始状态如下：
+
+![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/20210408195032.png)
+
+如果执行 `git reset B`，工作区会指向 `B`，其后的提交（C、D）被丢弃。
+
+![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/20210408195045.png)
+
+此时如果做一次新提交生成 `C1`，`C1`跟 C、D 没有关联，也就无法恢复C、D了。
+
+![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/20210408195059.png)
+
+如果执行 `git revert B`，回滚了 `B` 提交的内容后生成一个新 commit `E`，原有的历史不会被修改。
+
+![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/20210408195114.png)
+
+#### 找回已删除内容
+
+虽说 Git 是一款强大的版本管理工具，一般来说，提交到代码库的内容不用担心丢失，然而某些特殊情况下仍免不了要做抢救找回，例如不恰当的 reset、错删分支等。这就是 `git reflog`派上用场的时候了。
+
+“git reflog”是恢复本地历史的强力工具，几乎可以恢复所有本地记录，例如被 reset 丢弃掉的 commit、被删掉的分支等，称得上代码找回的“最后一根救命稻草”。
+
+然而需要注意，**并非真正所有记录”git reflog”都能够恢复**，有些情况仍然无能为力：
+
+1. **非本地操作的记录**
+   “git reflog”能管理的是本地工作区操作记录，非本地（如其他人或在其他机器上）的记录它就无从知晓了。
+2. **未 commit 的内容**
+   例如只在工作区或暂存区被回滚的内容（git checkout – 文件 或 git reset HEAD 文件）。
+3. **太久远的内容**
+   “git reflog”保留的记录有一定时间限制（默认 90 天），超时的会被自动清理。另外如果主动执行清理命令也会提前清理掉。
+
+##### 使用 Reflog 恢复到特定 commit
+
+一个典型的场景是使用 reset 进行回滚，之后发现滚错了，要恢复到另一个 commit 的状态。
+
+可以使用 `git reflog` 来查看 commit 操作历史，找到目标 commit，再通过 reset 恢复到目标 commit。
+
+通过这个示例我们还可以看到**清晰、有意义的 commit log 非常有帮助**。假如 commit 日志都是”update”、”fix”这类无明确意义的说明，那么即使有”git reflog”这样的工具，想找回目标内容也是一件艰苦的事。
+
+##### Reflog - 恢复特定 commit 中的某个文件
+
+场景：执行 reset 进行回滚，之后发现丢弃的 commit 中部分文件是需要的。
+解决方法：通过 reflog 找到目标 commit，再通过以下命令恢复目标 commit 中的特定文件。
+
+`git checkout <目标 commit> -- <文件>`
+
+##### Reflog - 找回本地误删的分支
+
+场景：用”git branch -D”删除本地分支，后发现删错了，上面还有未合并内容！
+解决方法：通过 reflog 找到分支被删前的 commit，基于目标 commit 重建分支。
+
+`git branch <分支名> <目标commit>`
+
+Reflog 记录中，”to <分支名>”（如 moving from master to dev/pilot-001） 到切换到其他分支（如 moving from dev/pilot-001 to master）之间的 commit 记录就是分支上的改动，从中选择需要的 commit 重建分支。
+
+##### 找回合流后删除的分支
+
+>作为 Git 优秀实践之一，开发分支合流之后即可删掉，以保持代码库整洁，只保留活跃的分支。
+>一些同学合流后仍保留着分支，主要出于“分支以后可能还用得到”的想法。其实大可不必，已合入主干的内容不必担心丢失，随时可以找回，包括从特定 commit 重建开发分支。并且，实际需要用到旧开发分支的情况真的很少，一般来说，即使功能有 bug，也是基于主干拉出新分支来修复和验证。
+
+假如要重建已合流分支，可通过主干历史找到分支合并记录，进而找到分支节点，基于该 commit 新建分支，例如：
+
+`git branch dev/feature-abc 1f85427`
+
+#### 关于代码回滚的一些建议
+
+以下是关于特定命令的使用建议：
+
+[![img](https://notes-image-host.oss-cn-beijing.aliyuncs.com/img/20210408200046.png)](https://help-assets.codehub.cn/enterprise/20210408200046.png)
+
+此外，总体来讲，回滚要谨填，不要过于依赖回滚功能，避免使用”git push -f”。正如某哲人所说：**如果用到”git push -f”，你肯定哪里做错了！**
+
