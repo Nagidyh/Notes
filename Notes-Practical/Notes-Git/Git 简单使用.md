@@ -317,3 +317,25 @@ Reflog 记录中，”to <分支名>”（如 moving from master to dev/pilot-00
 
 此外，总体来讲，回滚要谨填，不要过于依赖回滚功能，避免使用”git push -f”。正如某哲人所说：**如果用到”git push -f”，你肯定哪里做错了！**
 
+#### .gitignore 
+
+在本地或测试服务器部署代码时经常遇到本地环境有一些特殊文件时，比如 vendor 等。
+
+可以使用 .gitignore 忽略部分文件。
+
+如果需要删除现有版本库中的文件，需要先将文件加入 .gitignore 文件中，并且使用命令：
+
+`git rm <file> --cache`
+
+`git rm -r <file> --cache` 删除版本库文件，并保留本地文件。
+
+使用指令后，需要重新 commit 并 push 才能更新远程仓库。
+
+#### 测试环境部署
+
+通常测试环境都会有一两个环境变量文件，在建立本地库 remote origin pull 时，会报错：
+`fatal: refusing to merge unrelated histories`
+
+使用参数
+
+`--allow-unrelated-histories` 可以忽略提交历史
