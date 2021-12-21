@@ -339,3 +339,7 @@ Reflog 记录中，”to <分支名>”（如 moving from master to dev/pilot-00
 使用参数
 
 `--allow-unrelated-histories` 可以忽略提交历史
+
+#### 本地创建远程版本库的分支
+
+先使用 `git checkout -b dev` 创建本地库 dev 分值，再使用 `git branch --set-upstream-to=origin/dev dev` 设置本地分支和远程分支的映射，这时只需要 `git push origin dev` 就可根据本地 dev 分支创建 origin/dev 了
