@@ -343,3 +343,14 @@ Reflog 记录中，”to <分支名>”（如 moving from master to dev/pilot-00
 #### 本地创建远程版本库的分支
 
 先使用 `git checkout -b dev` 创建本地库 dev 分值，再使用 `git branch --set-upstream-to=origin/dev dev` 设置本地分支和远程分支的映射，这时只需要 `git push origin dev` 就可根据本地 dev 分支创建 origin/dev 了
+
+#### 同步本地与远程分支
+
+使用 coding 开发中，常常建立了 feature 到远程分支，在 codign merge request 之后，远程仓库的 feature 分支就被删除了。但在本地仍然存在 remotes/origin/feature 分支。
+
+这时候可以使用如下命令：
+
+`git remote show origin` 查看远程分支情况
+
+`git remote prune origin` 同步本地与远程分支
+
