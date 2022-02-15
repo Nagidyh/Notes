@@ -532,3 +532,54 @@ c2.inc(); // 21
 
 ### generator
 
+一个依照 python generator 设计的语法结构，简单对比一下，如果我们需要使用 JS 编写一个可保存状态的生成器（如上文编写的计数器），可以使用闭包的特性来实现，但是会使得代码异常的复杂，可读性也很低：
+
+```javascript
+// 一个使用 generator 斐波那契数列生成器
+function* fib(max) {
+    var
+        t,
+        a = 0,
+        b = 1,
+        n = 0;
+    while (n < max) {
+        yield a;
+        [a, b] = [b, a + b];
+        n ++;
+    }
+    return;
+}
+
+var fibList = fib(20);
+for(let num of fibList) {
+    console.log(num);
+}
+```
+
+`yield` 意味 v. 产生 ，在 JS 语法上的含义是产生一次返回，并在返回处进入 "暂停" 状态，等待下次调用 `next()` 。
+
+使用 generator 的时候需要注意一点，如果方法中不写 return; 会返回 return undefind，这样 `fibList` 无法正常获取到函数控制权了，也就无法使用。
+
+## 标准对象
+
+简单记录常用的标准对象
+
+### RegExp 
+
+JS 提供的正则匹配对象
+
+可以通过两个方式声明 RegExp 对象
+
+```javascript
+var re1 = /ABC\-001/;
+var re2 = new RegExp('ABC\\-001');  //  '\\' 为字符 '\' 串的转义
+
+re1; // /ABC\-001/
+re2; // /ABC\-001/
+```
+
+#### 匹配字符串
+
+#### 切分字符串
+
+#### 字符串分组
