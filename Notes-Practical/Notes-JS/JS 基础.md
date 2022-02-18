@@ -560,26 +560,44 @@ for(let num of fibList) {
 
 使用 generator 的时候需要注意一点，如果方法中不写 return; 会返回 return undefind，这样 `fibList` 无法正常获取到函数控制权了，也就无法使用。
 
-## 标准对象
+## JSON
 
-简单记录常用的标准对象
+JSON 是替换 XML 的网络数据交换格式。
 
-### RegExp 
+JSON 定义字符集必须使用 **UTF-8** ， JSON的字符串规定必须用双引号`""`，Object的键也必须用双引号`""` 。
 
-JS 提供的正则匹配对象
+- `JSON.stringify(Object obj, Array keys, String indent)`
 
-可以通过两个方式声明 RegExp 对象
+  ```javascript
+  'use strict';
+  
+  var xiaoming = {
+      name: '小明',
+      age: 14,
+      gender: true,
+      height: 1.65,
+      grade: null,
+      'middle-school': '\"W3C\" Middle School',
+      skills: ['JavaScript', 'Java', 'Python', 'Lisp']
+  };
+  
+  var s = JSON.stringify(xiaoming, ['grade', 'skills'], '    ');
+  console.log(s);
+  
+  /*
+  {
+      "grade": null,
+      "skills": [
+          "JavaScript",
+          "Java",
+          "Python",
+          "Lisp"
+      ]
+  }
+  */
+  ```
 
-```javascript
-var re1 = /ABC\-001/;
-var re2 = new RegExp('ABC\\-001');  //  '\\' 为字符 '\' 串的转义
+## OOP
 
-re1; // /ABC\-001/
-re2; // /ABC\-001/
-```
+在 ES6 之前，JS 并没有 class 这个关键字。
 
-#### 匹配字符串
-
-#### 切分字符串
-
-#### 字符串分组
