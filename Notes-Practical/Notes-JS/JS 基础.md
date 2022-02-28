@@ -601,3 +601,65 @@ JSON 定义字符集必须使用 **UTF-8** ， JSON的字符串规定必须用�
 
 在 ES6 之前，JS 并没有 class 这个关键字。
 
+所以 JS 的面向对象实现是没有 “类” 这个概念，相对的 JS 拥有 prototype “原型” 这个很重要的概念，以完成 OOP 编程。
+
+具体操作实例：
+
+```javascript
+var arr = [1, 2, 3];
+arr.shift(); 
+```
+
+这里的 arr 之所以能够使用 shift 方法，是因为 `Array.prototype` 定义了这个方法，如果访问的属性没有在上级的 prototype 被定义，那么 JS 引擎会一直**上溯的 `Object.prototype`** 来寻找这个属性，未找到则返回 undefined 。（方法也被认为是 Funciton 类型的属性）
+
+JavaScript的原型链和Java的Class区别就在，它没有“Class”的概念，所有对象都是实例，所谓继承关系不过是把**一个对象的原型指向另一个对象**而已。
+
+### 创建对象
+
+#### {}
+
+实例：
+
+```javascript
+var Person  = {
+    name: 'unkonw',
+    age: 0,
+    say: function () {
+		return 'I am ' + this.name + '.';
+    }
+}
+var july = {
+    name: 'July'
+};
+var july.__proto__ = Person;
+july.say(); // I am July.
+```
+
+> *请注意*，上述代码仅用于演示目的。在编写JavaScript代码时，不要直接用 `obj.__proto__` 去改变一个对象的原型，并且，低版本的IE也无法使用 `__proto__` 。`Object.create()` 方法可以传入一个原型对象来创建基于该原型的对象。
+
+#### 构造
+
+使用构造函数创建对象：
+
+``` javascript
+function Student(name) {
+    this.name = name;
+    this.hello = function() {
+		alert('Hi, there is '+ this.name + '!');
+    }
+}
+var Jerry = new Student('Jerry');
+Jerry.hello(); // Hi, there is Jerry!
+```
+
+使用构造函数创建的对象与其他方式不同的地方在于，在 `new Student('Jerry')` 上还从原型上获得了`constructor` 属性，他指向 `Student` 函数本身。
+
+```javascript
+Jerry.constructor === Student.prototype.constructor; // true
+Student.prototype.constructor === Student; // true
+Object.getPrototypeOf(Jerry) === Student.prototype; // true
+Jerry instanceof Student; // true
+```
+
+
+
